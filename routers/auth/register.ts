@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import bcrypt from 'bcrypt';
-import { RequestWithBody, User } from '../types/types';
-import { getUser, saveUser } from '../utils/users';
+import { RequestWithBody, User } from '../../types/types';
+import { getUser, saveUser } from '../../utils/users';
 
 const registerRouter = Router();
 

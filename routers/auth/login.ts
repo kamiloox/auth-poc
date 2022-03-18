@@ -1,12 +1,17 @@
 import { Router } from 'express';
 import bcrypt from 'bcrypt';
-import { RequestWithBody, User } from '../types/types';
-import { getUser } from '../utils/users';
+import jwt from 'jsonwebtoken';
+import { RequestWithBody, User } from '../../types/types';
+import { getUser } from '../../utils/users';
+import { getEnv } from '../../utils/env';
 
 const loginRouter = Router();
 
+const ACCESS_TOKEN = getEnv('ACCESS_TOKEN_SECRET');
+
 loginRouter.post('/', async (req: RequestWithBody<User>, res) => {
   const { login, password } = req.body;
+  console.log(res.locals.isAuthenticated);
 
   if (!login || !password) {
     return res.status(422).json({ status: 422, message: 'Provide login and password' });
@@ -25,10 +30,14 @@ loginRouter.post('/', async (req: RequestWithBody<User>, res) => {
       return res.status(404).json({ status: 404, message: 'Given password is invalid' });
     }
 
-    res.status(200).json({ status: 200, message: 'User logged in correctly', data: { user } });
+    const accessToken = jwt.sign({ login }, ACCESS_TOKEN);
+
+    res
+      .status(200)
+      .json({ status: 200, message: 'User logged in correctly', data: { user, accessToken } });
   } catch (err) {
-    console.error('Cannot create user', err);
-    res.status(500).json({ status: 500, message: 'Cannot create user, server error' });
+    console.error('Cannot login user', err);
+    res.status(500).json({ status: 500, message: 'Cannot login user, server error' });
   }
 });
 

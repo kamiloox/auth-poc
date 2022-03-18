@@ -6,7 +6,8 @@
     "strict": true,
     "moduleResolution": "node",
     "sourceMap": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "typeRoots": ["./typings"]
   },
   "lib": ["es2015"]
 }
