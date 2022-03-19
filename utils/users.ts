@@ -3,24 +3,34 @@ import { constants } from 'node:fs';
 import path from 'path';
 import { User } from '../types/types';
 
-const USERS_DB = path.join(process.cwd(), 'data', 'users.json');
+const DATA_DIR = path.join(process.cwd(), 'data');
+const USERS_DB = path.join(DATA_DIR, 'users.json');
 
-const checkDbExistence = async () => {
+const isDefinedInFileSystem = async (path: string) => {
   try {
-    await fs.access(USERS_DB, constants.F_OK);
+    await fs.access(path, constants.F_OK);
+
     return true;
   } catch {
     return false;
   }
 };
 
+export const initDb = async () => {
+  const dirExists = await isDefinedInFileSystem(DATA_DIR);
+  if (!dirExists) {
+    await fs.mkdir(DATA_DIR);
+  }
+
+  const dbExists = await isDefinedInFileSystem(USERS_DB);
+  if (!dbExists) {
+    await fs.writeFile(USERS_DB, JSON.stringify([]));
+    return [];
+  }
+};
+
 export const getAllUsers = async () => {
   try {
-    const dbExists = await checkDbExistence();
-    if (!dbExists) {
-      await fs.writeFile(USERS_DB, JSON.stringify([]));
-      return [];
-    }
     const content = await fs.readFile(USERS_DB, 'utf-8');
     const users = JSON.parse(content) as User[];
     return users;

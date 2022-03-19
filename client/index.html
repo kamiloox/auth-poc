@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>auth</title>
+  </head>
+  <body>
+    <form class="form">
+      <select class="auth">
+        <option value="login">login</option>
+        <option value="register">register</option>
+      </select>
+      <br /><br />
+      <label> login: <input type="text" class="login" /> </label><br /><br />
+      <label> password: <input type="password" class="password" /> </label><br /><br />
+      <button>submit</button>
+      <hr />
+    </form>
+    <form class="danger-form">
+      xss ⚠️
+      <br />
+      <label><textarea class="unsafe"></textarea></label>
+      <br /><br />
+      <button>submit</button>
+    </form>
+    <div class="output"></div>
+
+    <button class="protected">make request to protected resource</button>
+
+    <script>
+      const authForm = document.querySelector('.form');
+
+      const signInURL = `http://localhost:8080/auth/login`;
+
+      authForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const authSelect = document.querySelector('.auth');
+        const authScenario = authSelect.options[authSelect.selectedIndex].value;
+
+        const login = document.querySelector('.login').value;
+        const password = document.querySelector('.password').value;
+
+        if (login === '' || password === '') {
+          return;
+        }
+
+        fetch(`http://localhost:8080/auth/${authScenario}`, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'same-origin',
+          body: JSON.stringify({ login, password }),
+          method: 'POST',
+        })
+          .then((res) => res.json())
+          .then((data) => console.log(data))
+          .catch((error) => console.error(error));
+      });
+
+      const unsafeForm = document.querySelector('.danger-form');
+
+      unsafeForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const inputValue = document.querySelector('.unsafe').value;
+
+        const output = document.querySelector('.output');
+
+        output.innerHTML = inputValue;
+      });
+
+      const button = document.querySelector('.protected');
+
+      button.addEventListener('click', () => {
+        fetch('http://localhost:8080/protected', {
+          method: 'GET',
+          credentials: 'same-origin',
+        })
+          .then((res) => res.json())
+          .then((data) => console.log(data))
+          .catch((error) => console.error(error));
+      });
+    </script>
+  </body>
+</html>

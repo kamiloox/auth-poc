@@ -11,7 +11,6 @@ const ACCESS_TOKEN = getEnv('ACCESS_TOKEN_SECRET');
 
 loginRouter.post('/', async (req: RequestWithBody<User>, res) => {
   const { login, password } = req.body;
-  console.log(res.locals.isAuthenticated);
 
   if (!login || !password) {
     return res.status(422).json({ status: 422, message: 'Provide login and password' });
@@ -32,9 +31,17 @@ loginRouter.post('/', async (req: RequestWithBody<User>, res) => {
 
     const accessToken = jwt.sign({ login }, ACCESS_TOKEN);
 
-    res
-      .status(200)
-      .json({ status: 200, message: 'User logged in correctly', data: { user, accessToken } });
+    console.log(JSON.stringify(req.cookies));
+
+    const MAX_AGE_1_MONTH = 1000 * 3600 * 24 * 30;
+    res.cookie('access_token', accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      maxAge: MAX_AGE_1_MONTH,
+    });
+
+    res.status(200).json({ status: 200, message: 'User logged in correctly', data: { user } });
   } catch (err) {
     console.error('Cannot login user', err);
     res.status(500).json({ status: 500, message: 'Cannot login user, server error' });
